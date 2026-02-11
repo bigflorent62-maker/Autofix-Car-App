@@ -4,6 +4,7 @@
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "openai": "^4.0.0"
   }
 }
