@@ -1,119 +1,107 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<title>Autofix – Diagnosi AI</title>
-<style>
-body{
-  font-family: Arial, sans-serif;
-  margin:0;
-  background:#0f1b2d;
-  color:white;
-}
-.hero{
-  padding:80px 20px;
-  text-align:center;
-  background:linear-gradient(120deg,#1e3c72,#2a5298);
-}
-.hero h1{font-size:42px;margin-bottom:10px}
-.hero p{opacity:.8}
+  <meta charset="UTF-8" />
+  <title>Autofix AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #2e4f88, #0e1f35);
+      color: white;
+      text-align: center;
+      padding: 60px 20px;
+      margin: 0;
+    }
 
-.search{
-  margin-top:30px;
-}
-input,button{
-  padding:12px;
-  border-radius:6px;
-  border:none;
-  font-size:16px;
-}
-input{width:260px}
-button{
-  background:#ff7a18;
-  color:white;
-  cursor:pointer;
-}
+    h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
 
-.cards{
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  margin-top:50px;
-  flex-wrap:wrap;
-}
+    input {
+      padding: 12px;
+      width: 300px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+    }
 
-.card{
-  background:#1b2b45;
-  padding:25px;
-  border-radius:12px;
-  width:260px;
-}
+    button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      border-radius: 6px;
+      border: none;
+      background: #ff7a00;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-.result{
-  margin:40px auto;
-  max-width:500px;
-  background:#1b2b45;
-  padding:25px;
-  border-radius:12px;
-  display:none;
-}
-
-.loader{opacity:.6}
-</style>
+    #result {
+      margin-top: 40px;
+      background: #1c2e4a;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="hero">
   <h1>Autofix AI</h1>
   <p>Diagnosi intelligente e officina migliore per il tuo problema</p>
 
-  <div class="search">
-    <input id="problem" placeholder="Descrivi il problema auto">
-    <button onclick="analyze()">Analizza</button>
+  <div>
+    <input id="problem" placeholder="Descrivi il problema auto" />
+    <button id="analyzeBtn">Analizza</button>
   </div>
 
-  <div class="cards">
-    <div class="card">
-      <h3>Diagnosi AI</h3>
-      <p>Capisci il problema in pochi secondi</p>
-    </div>
-    <div class="card">
-      <h3>Officina migliore</h3>
-      <p>Scelta in base al tuo guasto reale</p>
-    </div>
-  </div>
-</div>
+  <div id="result"></div>
 
-<div id="result" class="result"></div>
+  <script>
+    console.log("JS CARICATO");
 
-<script>
-window.analyze = async function() {
-  alert("funzione partita");
+    document.getElementById("analyzeBtn").addEventListener("click", async function() {
 
-  const problem = document.getElementById("problem").value;
+      console.log("CLICK RILEVATO");
 
-  const res = await fetch("https://autofix-car-app.onrender.com/ai", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ problem })
-  });
+      const resultBox = document.getElementById("result");
+      const problem = document.getElementById("problem").value;
 
-  const data = await res.json();
+      if (!problem) {
+        resultBox.innerHTML = "Scrivi prima un problema.";
+        return;
+      }
 
-  document.getElementById("result").innerHTML = `
-    <h3>Diagnosi stimata</h3>
-    <p>${data.diagnosis}</p>
-    <h3>Officina consigliata</h3>
-    <p>${data.workshop}</p>
-  `;
-};
+      resultBox.innerHTML = "Analisi in corso...";
 
-</script>
+      try {
+        const response = await fetch("https://autofix-car-app.onrender.com/ai", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ problem })
+        });
 
-<script>
-console.log("JS CARICATO");
-</script>
+        const data = await response.json();
+
+        resultBox.innerHTML = `
+          <h3>Diagnosi stimata</h3>
+          <p>${data.diagnosis}</p>
+          <h3>Officina consigliata</h3>
+          <p>${data.workshop}</p>
+        `;
+
+      } catch (error) {
+        console.error(error);
+        resultBox.innerHTML = "Errore durante l'analisi.";
+      }
+    });
+  </script>
 
 </body>
 </html>
