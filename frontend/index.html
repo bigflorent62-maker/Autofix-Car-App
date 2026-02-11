@@ -70,7 +70,7 @@ button{
 
   <div class="search">
     <input id="problem" placeholder="Descrivi il problema auto">
-    <button onclick="runAI()">Analizza</button>
+    <button onclick="analyze()">Analizza</button>
   </div>
 
   <div class="cards">
@@ -88,32 +88,38 @@ button{
 <div id="result" class="result"></div>
 
 <script>
-async function runAI(){
-  const box = document.getElementById("result");
-  box.style.display="block";
-  box.innerHTML="<p class='loader'>Analisi in corso...</p>";
+async function analyze() {
+  const problem = document.getElementById("problem").value;
+  const resultBox = document.getElementById("result");
 
-  const res = await fetch("https://TUO-BACKEND.onrender.com/ai",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      problem:document.getElementById("problem").value
-    })
-  });
+  resultBox.innerHTML = "Analisi in corso...";
 
-  const data = await res.json();
+  try {
+    const res = await fetch("https://autofix-car-app.onrender.com/ai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ problem })
+    });
 
-  box.innerHTML = `
-    <h3>Diagnosi stimata</h3>
-    <p>${data.diagnosis}</p>
+    const data = await res.json();
 
-    <h3>Officina consigliata</h3>
-    <p>${data.workshop}</p>
+    resultBox.innerHTML = `
+      <h3>Diagnosi stimata</h3>
+      <p>${data.diagnosis}</p>
+      <h3>Officina consigliata</h3>
+      <p>${data.workshop}</p>
+      <button onclick="alert('Prenotazione demo')">Prenota</button>
+    `;
 
-    <button onclick="alert('Prenotazione futura')">Prenota ora</button>
-  `;
+  } catch (err) {
+    console.error(err);
+    resultBox.innerHTML = "Errore durante l'analisi.";
+  }
 }
 </script>
+
 
 </body>
 </html>
