@@ -1,11 +1,17 @@
 import express from "express";
 import cors from "cors";
 import sqlite3 from "sqlite3";
+import OpenAI from "openai";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_KEY
+});
+
+// DATABASE (resta)
 const db = new sqlite3.Database("./db.sqlite");
 
 db.run(`
@@ -19,48 +25,56 @@ CREATE TABLE IF NOT EXISTS bookings (
  status TEXT
 )`);
 
-import OpenAI from "openai";
+// === AGENTE MECCANICO ===
+app.post("/ai", async (req, res) => {
+  try {
+    const { problem, history } = req.body;
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+    const messages = [
+      {
+        role: "system",
+        content: `
+Sei un meccanico professionista con 25 anni di esperienza.
+Fai domande mirate.
+Non dare diagnosi vaghe.
+Analizza sintomi reali.
+Guida il cliente verso una diagnosi concreta.
+Rispondi in modo chiaro e professionale.
+`
+      }
+    ];
 
-app.post("/ai", async (req,res)=>{
-  const { problem } = req.body;
+    // Aggiunge storico conversazione
+    if (history && Array.isArray(history)) {
+      history.forEach(h => {
+        messages.push({ role: "user", content: h.user });
+        messages.push({ role: "assistant", content: h.ai });
+      });
+    }
 
-  const response = await openai.chat.completions.create({
-    model: "gpt-4.1-mini",   // o quello che usi
-    messages: [
-      { role:"system", content:"Sei un meccanico esperto che fa diagnosi rapide" },
-      { role:"user", content: problem }
-    ]
-  });
+    // Messaggio attuale
+    messages.push({ role: "user", content: problem });
 
-  res.json({
-    diagnosis: response.choices[0].message.content,
-    workshop: "Officina migliore in zona (demo)"
-  });
+    const response = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: messages,
+      temperature: 0.4
+    });
+
+    const aiReply = response.choices[0].message.content;
+
+    res.json({
+      diagnosis: aiReply,
+      workshop: "Officina consigliata in zona (demo)"
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Errore AI" });
+  }
 });
 
-
-app.post("/book",(req,res)=>{
-  const { name, car, problem, workshop, date } = req.body;
-
-  db.run(
-    "INSERT INTO bookings VALUES (NULL,?,?,?,?,?,?)",
-    [name,car,problem,workshop,date,"pending"]
-  );
-
-  res.json({ ok:true });
+app.listen(process.env.PORT || 10000, () => {
+  console.log("Server running");
 });
 
-app.get("/dashboard",(req,res)=>{
-  db.all("SELECT * FROM bookings",(err,rows)=>{
-    res.json(rows);
-  });
-});
-
-app.post("/complete/:id",(req,res)=>{
-  db.run("UPDATE bookings SET status='done' WHERE id=?", [req.params.id]);
-  res.json({ ok:true });
-});
-
-app.listen(process.env.PORT || 3001);
