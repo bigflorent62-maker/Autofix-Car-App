@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Autofix AI – Diagnosi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(180deg,#0e1b2e,#030814);
+    color:white;
+}
+
+.header{
+    padding:18px;
+    background:#081426;
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.chat{
+    padding:20px;
+    max-width:700px;
+    margin:auto;
+}
+
+.msg{
+    margin-bottom:16px;
+    padding:14px;
+    border-radius:12px;
+    line-height:1.4;
+}
+
+.user{
+    background:#ff8c1a;
+    color:black;
+    text-align:right;
+}
+
+.ai{
+    background:#1e3357;
+}
+
+.inputBox{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    background:#081426;
+    padding:12px;
+    display:flex;
+    gap:10px;
+}
+
+input{
+    flex:1;
+    padding:12px;
+    border-radius:8px;
+    border:none;
+    font-size:16px;
+}
+
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:8px;
+    background:#ff8c1a;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#ff9f3f;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Autofix AI – Diagnosi</div>
+
+<div class="chat" id="chat"></div>
+
+<div class="inputBox">
+    <input id="input" placeholder="Scrivi altri dettagli...">
+    <button onclick="send()">Invia</button>
+</div>
+
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+
+// prende il problema iniziale dalla home
+const params = new URLSearchParams(window.location.search);
+const firstProblem = params.get("problem");
+
+let history = [];
+
+if(firstProblem){
+    addUser(firstProblem);
+    callAI(firstProblem);
+}
+
+function addUser(text){
+    const div = document.createElement("div");
+    div.className="msg user";
+    div.innerText=text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function addAI(text){
+    const div = document.createElement("div");
+    div.className="msg ai";
+    div.innerText=text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+async function callAI(message){
+    addAI("Analisi in corso...");
+
+    try{
+        const res = await fetch("https://autofix-car-app.onrender.com/ai",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({ problem: message, history })
+        });
+
+        const data = await res.json();
+
+        // rimuove "Analisi in corso..."
+        chat.lastChild.remove();
+
+        addAI(data.diagnosis);
+        addAI("Officina consigliata: " + data.workshop);
+
+        history.push({user:message, ai:data.diagnosis});
+
+    }catch(err){
+        chat.lastChild.remove();
+        addAI("Errore di connessione al sistema AI.");
+        console.error(err);
+    }
+}
+
+function send(){
+    const text = input.value.trim();
+    if(!text) return;
+
+    input.value="";
+    addUser(text);
+    callAI(text);
+}
+</script>
+
+</body>
+</html>
