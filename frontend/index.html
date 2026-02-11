@@ -1,107 +1,112 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <title>Autofix AI</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(180deg, #2e4f88, #0e1f35);
-      color: white;
-      text-align: center;
-      padding: 60px 20px;
-      margin: 0;
-    }
+<meta charset="UTF-8">
+<title>Autofix AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    h1 {
-      font-size: 42px;
-      margin-bottom: 10px;
-    }
+<style>
+body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(180deg,#355c9a,#0e1b2e);
+    color:white;
+    text-align:center;
+}
 
-    input {
-      padding: 12px;
-      width: 300px;
-      border-radius: 6px;
-      border: none;
-      font-size: 16px;
-    }
+.hero{
+    padding:80px 20px;
+}
 
-    button {
-      padding: 12px 20px;
-      margin-left: 10px;
-      border-radius: 6px;
-      border: none;
-      background: #ff7a00;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
+.hero h1{
+    font-size:48px;
+    margin-bottom:10px;
+}
 
-    #result {
-      margin-top: 40px;
-      background: #1c2e4a;
-      padding: 20px;
-      border-radius: 12px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-  </style>
+.hero p{
+    opacity:.85;
+}
+
+.search{
+    margin-top:30px;
+}
+
+input{
+    padding:14px;
+    width:280px;
+    border-radius:8px;
+    border:none;
+    font-size:16px;
+}
+
+button{
+    padding:14px 22px;
+    border:none;
+    border-radius:8px;
+    background:#ff8c1a;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+    margin-left:6px;
+}
+
+button:hover{
+    background:#ff9f3f;
+}
+
+.cards{
+    margin-top:60px;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.card{
+    background:rgba(0,0,0,.35);
+    padding:30px;
+    border-radius:14px;
+    width:260px;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>Autofix AI</h1>
-  <p>Diagnosi intelligente e officina migliore per il tuo problema</p>
+<div class="hero">
+    <h1>Autofix AI</h1>
+    <p>Diagnosi intelligente e officina migliore per il tuo problema</p>
 
-  <div>
-    <input id="problem" placeholder="Descrivi il problema auto" />
-    <button id="analyzeBtn">Analizza</button>
-  </div>
+    <div class="search">
+        <input id="problem" placeholder="Descrivi il problema auto">
+        <button onclick="goToChat()">Analizza</button>
+    </div>
 
-  <div id="result"></div>
+    <div class="cards">
+        <div class="card">
+            <h3>Diagnosi AI</h3>
+            <p>Capisci il problema in pochi secondi</p>
+        </div>
+        <div class="card">
+            <h3>Officina migliore</h3>
+            <p>Scelta in base al tuo guasto reale</p>
+        </div>
+    </div>
+</div>
 
-  <script>
-    console.log("JS CARICATO");
+<script>
+function goToChat(){
+    const problem = document.getElementById("problem").value.trim();
 
-    document.getElementById("analyzeBtn").addEventListener("click", async function() {
-
-      console.log("CLICK RILEVATO");
-
-      const resultBox = document.getElementById("result");
-      const problem = document.getElementById("problem").value;
-
-      if (!problem) {
-        resultBox.innerHTML = "Scrivi prima un problema.";
+    if(!problem){
+        alert("Scrivi il problema dell'auto");
         return;
-      }
+    }
 
-      resultBox.innerHTML = "Analisi in corso...";
-
-      try {
-        const response = await fetch("https://autofix-car-app.onrender.com/ai", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ problem })
-        });
-
-        const data = await response.json();
-
-        resultBox.innerHTML = `
-          <h3>Diagnosi stimata</h3>
-          <p>${data.diagnosis}</p>
-          <h3>Officina consigliata</h3>
-          <p>${data.workshop}</p>
-        `;
-
-      } catch (error) {
-        console.error(error);
-        resultBox.innerHTML = "Errore durante l'analisi.";
-      }
-    });
-  </script>
+    // Passiamo il problema alla seconda pagina
+    window.location.href = "chat.html?problem=" + encodeURIComponent(problem);
+}
+</script>
 
 </body>
 </html>
