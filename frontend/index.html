@@ -88,36 +88,27 @@ button{
 <div id="result" class="result"></div>
 
 <script>
-async function analyze() {
+window.analyze = async function() {
+  alert("funzione partita");
+
   const problem = document.getElementById("problem").value;
-  const resultBox = document.getElementById("result");
 
-  resultBox.innerHTML = "Analisi in corso...";
+  const res = await fetch("https://autofix-car-app.onrender.com/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ problem })
+  });
 
-  try {
-    const res = await fetch("https://autofix-car-app.onrender.com/ai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ problem })
-    });
+  const data = await res.json();
 
-    const data = await res.json();
+  document.getElementById("result").innerHTML = `
+    <h3>Diagnosi stimata</h3>
+    <p>${data.diagnosis}</p>
+    <h3>Officina consigliata</h3>
+    <p>${data.workshop}</p>
+  `;
+};
 
-    resultBox.innerHTML = `
-      <h3>Diagnosi stimata</h3>
-      <p>${data.diagnosis}</p>
-      <h3>Officina consigliata</h3>
-      <p>${data.workshop}</p>
-      <button onclick="alert('Prenotazione demo')">Prenota</button>
-    `;
-
-  } catch (err) {
-    console.error(err);
-    resultBox.innerHTML = "Errore durante l'analisi.";
-  }
-}
 </script>
 
 <script>
