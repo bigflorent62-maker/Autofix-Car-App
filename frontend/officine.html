@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Officine consigliate</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0c1b2d;
+  color:white;
+  padding:60px 20px;
+}
+
+h1{text-align:center;margin-bottom:40px;}
+
+.list{
+  max-width:800px;
+  margin:auto;
+}
+
+.workshop{
+  background:#1e3456;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:15px;
+}
+
+.workshop strong{
+  font-size:18px;
+}
+</style>
+</head>
+<body>
+
+<h1 id="title"></h1>
+
+<div class="list" id="results"></div>
+
+<script>
+const job = localStorage.getItem("selectedJob");
+document.getElementById("title").innerText =
+  "Officine specializzate in " + job;
+
+const demoOfficine = [
+  {name:"Autofficina Rossi", rating:"⭐ 4.8"},
+  {name:"Garage Modena Pro", rating:"⭐ 4.6"},
+  {name:"Centro Auto Service", rating:"⭐ 4.5"}
+];
+
+const box = document.getElementById("results");
+
+demoOfficine.forEach(o=>{
+  const div = document.createElement("div");
+  div.className = "workshop";
+  div.innerHTML = `<strong>${o.name}</strong><br>${o.rating}`;
+  box.appendChild(div);
+});
+</script>
+
+</body>
+</html>
