@@ -12,8 +12,6 @@ body{
   color:white;
 }
 
-/* HERO */
-
 .hero{
   background: linear-gradient(180deg,#355fa8,#1c3b6e);
   padding:110px 20px 140px;
@@ -29,8 +27,6 @@ body{
   font-size:18px;
   opacity:0.9;
 }
-
-/* MAIN BUTTONS */
 
 .main-buttons{
   display:flex;
@@ -62,8 +58,6 @@ body{
   opacity:0.9;
 }
 
-/* SEARCH CITY */
-
 .city-search{
   margin-top:80px;
   display:flex;
@@ -89,8 +83,6 @@ body{
   cursor:pointer;
 }
 
-/* SECTION BELOW */
-
 .section{
   background:#0c1b2d;
   padding:120px 20px;
@@ -107,8 +99,6 @@ body{
   font-size:18px;
 }
 
-/* MOBILE */
-
 @media(max-width:700px){
   .hero h1{font-size:36px;}
   .city-search{flex-direction:column;}
@@ -124,12 +114,12 @@ body{
   <p>Diagnosi intelligente e officina migliore per il tuo problema</p>
 
   <div class="main-buttons">
-    <div class="main-btn" onclick="goToChat()">
+    <div class="main-btn" id="btnDiagnosi">
       <h3>Diagnosi AI</h3>
       <p>Capisci il problema in pochi secondi</p>
     </div>
 
-    <div class="main-btn" onclick="scrollToWorkshops()">
+    <div class="main-btn" id="btnOfficina">
       <h3>Officina migliore</h3>
       <p>Trova subito chi può aiutarti</p>
     </div>
@@ -137,32 +127,31 @@ body{
 
   <div class="city-search">
     <input id="cityInput" placeholder="Cerca per città o zona...">
-    <button onclick="searchCity()">Cerca</button>
+    <button id="btnCerca">Cerca</button>
   </div>
 </div>
 
-<div class="section" id="workshops">
+<div class="section">
   <h2>Officine nella tua zona</h2>
   <p>(qui compariranno i risultati per città)</p>
 </div>
 
 <script>
-function scrollToWorkshops(){
+document.getElementById("btnDiagnosi").addEventListener("click", function(){
+  window.location.href = "chat.html";
+});
+
+document.getElementById("btnOfficina").addEventListener("click", function(){
   window.location.href = "lavori.html";
-}
+});
 
-function scrollToWorkshops(){
-  document.getElementById("workshops").scrollIntoView({behavior:"smooth"});
-}
-
-function searchCity(){
+document.getElementById("btnCerca").addEventListener("click", function(){
   const city = document.getElementById("cityInput").value.trim();
   if(!city) return;
-
   alert("Ricerca officine per: " + city);
-  // qui poi collegheremo API officine reali
-}
+});
 </script>
 
 </body>
 </html>
+
