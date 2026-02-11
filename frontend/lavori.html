@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Scegli intervento</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:#0c1b2d;
+  color:white;
+  text-align:center;
+  padding:80px 20px;
+}
+
+h1{margin-bottom:40px;}
+
+.grid{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:20px;
+}
+
+.job{
+  background:#1e3456;
+  padding:25px;
+  width:220px;
+  border-radius:14px;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.job:hover{
+  transform:translateY(-4px);
+}
+
+</style>
+</head>
+<body>
+
+<h1>Che intervento ti serve?</h1>
+
+<div class="grid">
+  <div class="job" onclick="selectJob('Freni')">Freni</div>
+  <div class="job" onclick="selectJob('Distribuzione')">Distribuzione</div>
+  <div class="job" onclick="selectJob('Frizione')">Frizione</div>
+  <div class="job" onclick="selectJob('Tagliando')">Tagliando</div>
+  <div class="job" onclick="selectJob('Sospensioni')">Sospensioni</div>
+  <div class="job" onclick="selectJob('Elettronica')">Elettronica</div>
+  <div class="job" onclick="selectJob('Motore')">Motore</div>
+</div>
+
+<script>
+function selectJob(job){
+  localStorage.setItem("selectedJob", job);
+  window.location.href = "officine.html";
+}
+</script>
+
+</body>
+</html>
