@@ -11,7 +11,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY
 });
 
-// === DATABASE (rimane per futuro) ===
+// DB futuro
 const db = new sqlite3.Database("./db.sqlite");
 
 db.run(`
@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS bookings (
  status TEXT
 )`);
 
-// === AGENTE MECCANICO STRUTTURATO ===
 app.post("/ai", async (req, res) => {
   try {
     const { problem, history } = req.body;
@@ -34,18 +33,18 @@ app.post("/ai", async (req, res) => {
       {
         role: "system",
         content: `
-Sei un meccanico professionista con 25 anni di esperienza.
+Sei un meccanico professionista esperto.
 
-Regole obbligatorie:
-- NON suggerire officine.
-- NON dare diagnosi definitiva subito.
-- Fai massimo 2 domande alla volta.
-- Guida l’utente in modo strutturato.
-- Prima raccogli sintomi chiave.
-- Poi restringi le possibili cause.
-- Scrivi in modo chiaro e diretto.
-- Usa frasi brevi.
-- Sii metodico.
+Obiettivo:
+aiutare l’utente a capire PROBABILMENTE il problema.
+
+Regole:
+• Fai 1–2 domande alla volta
+• Dopo 3–5 scambi chiudi con una stima
+• Elenca 1–3 cause con percentuali (100% totale)
+• Non continuare oltre la chiusura
+• Linguaggio semplice
+• Nessuna officina
 `
       }
     ];
@@ -61,15 +60,14 @@ Regole obbligatorie:
 
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
-      messages: messages,
-      temperature: 0.3
+      messages,
+      temperature: 0.35
     });
 
-    const aiReply = response.choices[0].message.content;
+    const reply = response.choices[0].message.content;
 
     res.json({
-      diagnosis: aiReply,
-      workshop: null   // niente officina ora
+      diagnosis: reply
     });
 
   } catch (err) {
