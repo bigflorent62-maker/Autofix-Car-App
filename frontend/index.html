@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Autofix AI</title>
+</head>
+<body>
+  <h1>Autofix – Diagnosi AI</h1>
+
+  <input id="problem" placeholder="Descrivi problema auto">
+  <button onclick="runAI()">Analizza</button>
+
+  <pre id="result"></pre>
+
+<script>
+async function runAI(){
+  const res = await fetch("https://TUO-BACKEND.onrender.com/ai",{
+    method:"POST",
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      problem: document.getElementById("problem").value
+    })
+  });
+
+  document.getElementById("result").innerText =
+    JSON.stringify(await res.json(), null, 2);
+}
+</script>
+</body>
+</html>
