@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Officine consigliate</title>
+
 <style>
 body{
   margin:0;
@@ -12,7 +13,7 @@ body{
   padding:60px 20px;
 }
 
-h1{text-align:center;margin-bottom:40px;}
+h1{text-align:center;margin-bottom:30px;}
 
 .list{
   max-width:800px;
@@ -26,16 +27,32 @@ h1{text-align:center;margin-bottom:40px;}
   margin-bottom:15px;
 }
 
-.workshop strong{
-  font-size:18px;
+.register-box{
+  text-align:center;
+  margin-top:60px;
+}
+
+button{
+  padding:14px 26px;
+  border:none;
+  border-radius:10px;
+  background:#ff8c1a;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
 }
 </style>
 </head>
+
 <body>
 
 <h1 id="title"></h1>
 
 <div class="list" id="results"></div>
+
+<div class="register-box">
+  <button onclick="goRegister()">Sei un’officina? Iscriviti</button>
+</div>
 
 <script>
 const job = localStorage.getItem("selectedJob");
@@ -48,14 +65,20 @@ const demoOfficine = [
   {name:"Centro Auto Service", rating:"⭐ 4.5"}
 ];
 
+const saved = JSON.parse(localStorage.getItem("workshops") || "[]");
+
 const box = document.getElementById("results");
 
-demoOfficine.forEach(o=>{
+[...demoOfficine, ...saved].forEach(o=>{
   const div = document.createElement("div");
   div.className = "workshop";
-  div.innerHTML = `<strong>${o.name}</strong><br>${o.rating}`;
+  div.innerHTML = `<strong>${o.name}</strong><br>${o.skills}<br>${o.address}`;
   box.appendChild(div);
 });
+
+function goRegister(){
+  window.location.href = "iscrizione.html";
+}
 </script>
 
 </body>
