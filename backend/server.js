@@ -12,7 +12,21 @@ const client = new OpenAI({
 
 app.post("/ai", async (req, res) => {
   try {
-    const { messages } = req.body;
+
+    let messages = req.body.messages;
+
+    // fallback se arriva solo testo semplice
+    if (!messages) {
+      const problem = req.body.problem || req.body.text;
+      if (!problem) {
+        return res.status(400).json({ error: "Nessun messaggio ricevuto" });
+      }
+
+      messages = [
+        { role: "system", content: "Sei un meccanico esperto che aiuta a diagnosticare problemi auto." },
+        { role: "user", content: problem }
+      ];
+    }
 
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
@@ -22,9 +36,7 @@ app.post("/ai", async (req, res) => {
       }))
     });
 
-    const reply = response.output_text;
-
-    res.json({ reply });
+    res.json({ reply: response.output_text });
 
   } catch (err) {
     console.error("OPENAI ERROR:", err);
@@ -33,8 +45,4 @@ app.post("/ai", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
-});
-
+app.listen(PORT, () => console.log("Server running on", PORT));
