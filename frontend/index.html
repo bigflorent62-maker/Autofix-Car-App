@@ -99,6 +99,25 @@ body{
   font-size:18px;
 }
 
+.register-box{
+  margin-top:80px;
+}
+
+.register-btn{
+  padding:18px 34px;
+  font-size:18px;
+  background:#ff8c1a;
+  border:none;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.register-btn:hover{
+  transform:scale(1.05);
+}
+
 @media(max-width:700px){
   .hero h1{font-size:36px;}
   .city-search{flex-direction:column;}
@@ -134,21 +153,32 @@ body{
 <div class="section">
   <h2>Officine nella tua zona</h2>
   <p>(qui compariranno i risultati per città)</p>
+
+  <div class="register-box">
+    <p>Se sei un meccanico o un’officina:</p>
+    <button class="register-btn" id="btnIscrizione">
+      Iscrivi la tua officina
+    </button>
+  </div>
 </div>
 
 <script>
-document.getElementById("btnDiagnosi").addEventListener("click", function(){
+document.getElementById("btnDiagnosi").addEventListener("click", () => {
   window.location.href = "chat.html";
 });
 
-document.getElementById("btnOfficina").addEventListener("click", function(){
+document.getElementById("btnOfficina").addEventListener("click", () => {
   window.location.href = "lavori.html";
 });
 
-document.getElementById("btnCerca").addEventListener("click", function(){
+document.getElementById("btnCerca").addEventListener("click", () => {
   const city = document.getElementById("cityInput").value.trim();
   if(!city) return;
   alert("Ricerca officine per: " + city);
+});
+
+document.getElementById("btnIscrizione").addEventListener("click", () => {
+  window.location.href = "iscrizione.html";
 });
 </script>
 
