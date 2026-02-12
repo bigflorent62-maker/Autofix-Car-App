@@ -6,27 +6,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 app.post("/ai", async (req, res) => {
   try {
     const { messages } = req.body;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages,
-      temperature: 0.3,
+    const response = await client.responses.create({
+      model: "gpt-4.1-mini",
+      input: messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }))
     });
 
-    res.json({
-      reply: completion.choices[0].message.content,
-    });
+    const reply = response.output_text;
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Errore AI backend" });
+    res.json({ reply });
+
+  } catch (err) {
+    console.error("OPENAI ERROR:", err);
+    res.status(500).json({ error: err.message || err });
   }
 });
 
@@ -35,5 +37,4 @@ const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
-
 
