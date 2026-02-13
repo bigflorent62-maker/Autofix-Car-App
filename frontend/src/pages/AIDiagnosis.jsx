@@ -44,34 +44,35 @@ export default function AIDiagnosis() {
   setInput("");
   setIsLoading(true);
 
-  try {
-    const response = await fetch("https://autofix-car-app.onrender.com/ai", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messages: updatedMessages
-      })
-    });
+ try {
+  const response = await fetch("https://autofix-car-app.onrender.com/ai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      problem: userInput
+    })
+  });
 
-    const data = await response.json();
+  const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || "Errore server");
-    }
+  if (!response.ok) {
+    throw new Error(data.error || "Errore server AI");
+  }
 
-    setMessages(prev => [
-      ...prev,
-      { role: "assistant", content: data.reply }
-    ]);
+  setMessages(prev => [
+    ...prev,
+    { role: "assistant", content: data.reply }
+  ]);
 
-  } catch (error) {
-    console.error("ERRORE FRONTEND:", error);
-    setMessages(prev => [
-      ...prev,
-      { role: "assistant", content: "Errore di connessione con il server AI." }
-    ]);
+} catch (error) {
+  console.error(error);
+  setMessages(prev => [
+    ...prev,
+    { role: "assistant", content: "Mi dispiace, si è verificato un errore. Riprova." }
+  ]);
+}
   } finally {
     setIsLoading(false);
   }
