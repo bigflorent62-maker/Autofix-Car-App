@@ -35,168 +35,48 @@ export default function AIDiagnosis() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-    const userInput = input;
-    setInput('');
-    setIsLoading(true);
+  const userMessage = { role: "user", content: input };
+  const updatedMessages = [...messages, userMessage];
 
-    try {
-      // Estrai info veicolo se non presente
-      if (!vehicleInfo) {
-        const vehicleResponse = await base44.integrations.Core.InvokeLLM({
-          prompt: `Estrai informazioni veicolo da: "${userInput}"
-          
-Accetta errori di battitura e formati diversi.
-Esempi: "fiat punto 2015" → marca: Fiat, modello: Punto, anno: 2015`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              marca: { type: 'string' },
-              modello: { type: 'string' },
-              anno: { type: 'number' }
-            }
-          }
-        });
+  setMessages(updatedMessages);
+  setInput("");
+  setIsLoading(true);
 
-        if (vehicleResponse.marca && vehicleResponse.modello && vehicleResponse.anno) {
-          setVehicleInfo(vehicleResponse);
-          setMessages(prev => [...prev, { 
-            role: 'assistant', 
-            content: `Perfetto: ${vehicleResponse.marca} ${vehicleResponse.modello} ${vehicleResponse.anno}.\n\nOra dimmi: quando e come si manifesta il problema?` 
-          }]);
-        } else {
-          setMessages(prev => [...prev, { 
-            role: 'assistant', 
-            content: 'Scusa, non ho capito. Indica marca, modello e anno (es: Fiat Punto 2015)' 
-          }]);
-        }
-      } 
-      // Diagnosi e ricerca officina
-      else if (vehicleInfo && !diagnosis) {
-        const chatHistory = messages
-          .map(m => `${m.role === 'user' ? 'Cliente' : 'Assistente'}: ${m.content}`)
-          .join('\n\n');
+  try {
+    const response = await fetch("https://autofix-car-app.onrender.com/ai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages: updatedMessages
+      })
+    });
 
-        const diagnosisResponse = await base44.integrations.Core.InvokeLLM({
-          prompt: `Sei un assistente per diagnosi auto. Devi essere RAPIDO ed EFFICIENTE.
+    const data = await response.json();
 
-Veicolo: ${vehicleInfo.marca} ${vehicleInfo.modello} ${vehicleInfo.anno}
-
-Conversazione:
-${chatHistory}
-
-Messaggio: "${userInput}"
-
-REGOLE FERREE:
-- Massimo 2 domande brevi per messaggio
-- Massimo 4 scambi totali per diagnosi
-- Dopo aver identificato il problema, chiedi SUBITO: "In che città/zona ti trovi?"
-- Quando ricevi la località (anche solo il nome della città), COMPLETA SUBITO la diagnosi
-
-RICONOSCIMENTO LOCALITÀ:
-- Qualsiasi nome di città italiana è valido (Milano, Roma, Torino, Bologna, ecc.)
-- Anche zone/quartieri vanno bene
-- Se l'utente scrive solo il nome città, è sufficiente → diagnosi_completa: true
-
-FLUSSO:
-1-4) Fai domande essenziali (quando? come? sempre?)
-5) Identifica servizio + chiedi località
-6) Quando hai la località → COMPLETA IMMEDIATAMENTE con diagnosi_completa: true
-
-Categorie: "Meccanica generale", "Elettrauto", "Carrozzeria", "Gommista", "Tagliando", "Revisione", "Climatizzatore", "Freni"
-
-Output quando hai la località:
-- diagnosi_completa: true
-- categoria_servizio: categoria corretta
-- sintesi_problema: breve descrizione
-- citta_utente: estrai la città dal messaggio
-
-Output senza località:
-- diagnosi_completa: false
-- risposta: domanda breve`,
-          response_json_schema: {
-            type: 'object',
-            properties: {
-              risposta: { type: 'string' },
-              diagnosi_completa: { type: 'boolean' },
-              categoria_servizio: { type: 'string' },
-              sintesi_problema: { type: 'string' },
-              citta_utente: { type: 'string' }
-            }
-          }
-        });
-
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
-          content: diagnosisResponse.risposta 
-        }]);
-
-        // Se diagnosi completa, cerca officina
-        if (diagnosisResponse.diagnosi_completa && diagnosisResponse.categoria_servizio) {
-          setDiagnosis({
-            category: diagnosisResponse.categoria_servizio,
-            summary: diagnosisResponse.sintesi_problema
-          });
-          
-          // Cerca officina più adatta
-          const workshops = await base44.entities.Workshop.filter({ status: 'active' });
-          
-          let qualifiedWorkshops = workshops.filter(w => 
-            w.services?.includes(diagnosisResponse.categoria_servizio)
-          );
-
-          // Filtra per città se fornita
-          if (diagnosisResponse.citta_utente) {
-            const cityMatch = qualifiedWorkshops.filter(w => 
-              w.city?.toLowerCase().includes(diagnosisResponse.citta_utente.toLowerCase())
-            );
-            if (cityMatch.length > 0) {
-              qualifiedWorkshops = cityMatch;
-            }
-          }
-
-          // Ordina per rating nella categoria specifica
-          qualifiedWorkshops.sort((a, b) => {
-            const ratingA = a.category_ratings?.[diagnosisResponse.categoria_servizio]?.rating || a.average_rating || 0;
-            const ratingB = b.category_ratings?.[diagnosisResponse.categoria_servizio]?.rating || b.average_rating || 0;
-            return ratingB - ratingA;
-          });
-
-          if (qualifiedWorkshops.length > 0) {
-            const bestWorkshop = qualifiedWorkshops[0];
-            setRecommendedWorkshop(bestWorkshop);
-            
-            const rating = bestWorkshop.category_ratings?.[diagnosisResponse.categoria_servizio]?.rating || bestWorkshop.average_rating || 0;
-            const reviewCount = bestWorkshop.category_ratings?.[diagnosisResponse.categoria_servizio]?.count || bestWorkshop.total_reviews || 0;
-            
-            setTimeout(() => {
-              setMessages(prev => [...prev, { 
-                role: 'assistant', 
-                content: `✅ **Intervento consigliato:** ${diagnosisResponse.categoria_servizio}\n\n🏆 **Officina suggerita:**\n${bestWorkshop.name}\n📍 ${bestWorkshop.city}${bestWorkshop.zone ? `, ${bestWorkshop.zone}` : ''}\n⭐ ${rating.toFixed(1)}/5 (${reviewCount} recensioni)\n\nClicca sul pulsante qui sotto per prenotare!` 
-              }]);
-            }, 500);
-          } else {
-            setTimeout(() => {
-              setMessages(prev => [...prev, { 
-                role: 'assistant', 
-                content: 'Non ci sono officine registrate nella sua zona.' 
-              }]);
-            }, 500);
-          }
-        }
-      }
-    } catch (error) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Mi dispiace, si è verificato un errore. Riprova.' 
-      }]);
-    } finally {
-      setIsLoading(false);
+    if (!response.ok) {
+      throw new Error(data.error || "Errore server");
     }
-  };
+
+    setMessages(prev => [
+      ...prev,
+      { role: "assistant", content: data.reply }
+    ]);
+
+  } catch (error) {
+    console.error("ERRORE FRONTEND:", error);
+    setMessages(prev => [
+      ...prev,
+      { role: "assistant", content: "Errore di connessione con il server AI." }
+    ]);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleBookWorkshop = () => {
     if (recommendedWorkshop && diagnosis) {
