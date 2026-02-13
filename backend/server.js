@@ -6,41 +6,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 app.post("/ai", async (req, res) => {
   try {
+    const { problem } = req.body;
 
-    let messages = req.body.messages;
-
-    // fallback se arriva solo testo semplice
-    if (!messages) {
-      const problem = req.body.problem || req.body.text;
-      if (!problem) {
-        return res.status(400).json({ error: "Nessun messaggio ricevuto" });
-      }
-
-      messages = [
-        { role: "system", content: "Sei un meccanico esperto che aiuta a diagnosticare problemi auto." },
-        { role: "user", content: problem }
-      ];
+    if (!problem) {
+      return res.status(400).json({ error: "Campo 'problem' mancante" });
     }
 
-    const response = await client.responses.create({
-      model: "gpt-4.1-mini",
-      input: messages.map(m => ({
-        role: m.role,
-        content: m.content
-      }))
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.3,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Sei un meccanico esperto. Fai massimo 1-2 domande alla volta. Dopo alcune risposte fornisci una diagnosi probabile con percentuali. Non dilungarti.",
+        },
+        {
+          role: "user",
+          content: problem,
+        },
+      ],
     });
 
-    res.json({ reply: response.output_text });
+    res.json({
+      reply: completion.choices[0].message.content,
+    });
 
-  } catch (err) {
-    console.error("OPENAI ERROR:", err);
-    res.status(500).json({ error: err.message || err });
+  } catch (error) {
+    console.error("AI ERROR:", error);
+    res.status(500).json({ error: "Errore AI backend" });
   }
 });
 
